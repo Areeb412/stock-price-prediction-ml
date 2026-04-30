@@ -216,3 +216,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+STOCK_PRICE_PREDICTION_GUIDE.md
+STOCK_UI_GUIDE.md
