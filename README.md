@@ -1,148 +1,93 @@
-# 📈 Stock Price Prediction — ML-Powered Short-Term Forecasting
+# Stock Price Prediction ML
 
-![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange?logo=scikit-learn)
-![Jupyter](https://img.shields.io/badge/Notebook-.ipynb-orange?logo=jupyter)
-![uv](https://img.shields.io/badge/env-uv-purple)
-![License](https://img.shields.io/badge/license-MIT-green)
+This project predicts the next trading day's closing price for a stock using historical OHLCV data from Yahoo Finance. It includes a Jupyter notebook for exploration and a Gradio app for running the same workflow from a small web UI.
 
-A production-grade machine learning system for short-term stock price prediction using **Linear Regression** and **Random Forest** models trained on real market data fetched live from Yahoo Finance.
+The model output is for learning and experimentation only. It should not be used for trading or investment decisions.
 
----
+## What It Does
 
-## 🎯 Project Objective
+- Downloads adjusted stock price data with `yfinance`
+- Builds lag, rolling average, volatility, momentum, and volume features
+- Trains Linear Regression, Random Forest, and a simple ensemble
+- Evaluates the models with MAE, RMSE, R2, MAPE, and directional accuracy
+- Saves charts for EDA, predictions, feature importance, and model comparison
+- Provides an optional Gradio interface for trying different tickers and settings
 
-Predict the **next day's closing price** of a given stock using historical OHLCV (Open, High, Low, Close, Volume) data combined with a rich set of engineered time series features.
+## Project Structure
 
----
-
-## 🏗️ Architecture
-
-```
-Yahoo Finance (yfinance API)
-      │
-      ▼
-Raw OHLCV Data → EDA → Feature Engineering → Preprocessing
-                                                   │
-                               ┌───────────────────┤
-                               ▼                   ▼
-                      Linear Regression     Random Forest
-                               │                   │
-                               └─────────┬─────────┘
-                                         ▼
-                              Evaluation + Visualization
-                                         │
-                                         ▼
-                               Next-Day Price Prediction
+```text
+stock-price-prediction-ml/
+|-- stock_prediction.ipynb      # Notebook workflow
+|-- gradio_app.py               # Interactive Gradio app
+|-- src/
+|   |-- data_loader.py          # Yahoo Finance download and validation
+|   |-- features.py             # Feature engineering
+|   |-- model_trainer.py        # Model training and evaluation
+|   `-- predictor.py            # Next-day prediction helper
+|-- data/                       # Cached/downloaded data
+|-- outputs/                    # Saved charts
+|-- pyproject.toml
+|-- uv.lock
+`-- README.md
 ```
 
----
+## Setup
 
-## ✨ Key Features
-
-- **Live Data Fetching**: Pulls real, adjusted stock data via `yfinance`
-- **25+ Engineered Features**: Lag features, rolling statistics, momentum indicators, volume ratios
-- **Two ML Models**: Linear Regression (baseline) + Random Forest Regressor (production)
-- **Comprehensive Evaluation**: MAE, RMSE, R², MAPE, Directional Accuracy
-- **5 Publication-Quality Plots**: EDA dashboard, train/test split, actual vs predicted, model comparison dashboard, feature importance
-- **Next-Day Prediction**: Generates an actual forecast for tomorrow's price
-- **Production Practices**: Logging, modular functions, configuration dict, reproducible seeds, data validation
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.11+
-- `uv` package manager
-
-### Installation
+This repository uses `uv`.
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/YOUR_USERNAME/stock-price-predictor.git
-cd stock-price-predictor
-
-# 2. Install uv (if not already installed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 3. Install all dependencies
 uv sync
-
-# 4. Open the notebook in VSCode
-code .
-# Then open stock_prediction.ipynb and select the .venv kernel
 ```
 
-### Changing the Stock
+If you want to use the notebook, open `stock_prediction.ipynb` and select the project virtual environment as the kernel.
 
-In `stock_prediction.ipynb`, Cell 1, change the `CONFIG["TICKER"]`:
+## Run the Notebook
+
+Open `stock_prediction.ipynb`, change the ticker or date range in the `CONFIG` dictionary if needed, then run the cells from top to bottom.
+
+Example:
 
 ```python
 CONFIG = {
-    "TICKER": "TSLA",  # Change to any valid ticker: MSFT, GOOGL, AMZN, etc.
-    ...
+    "TICKER": "AAPL",
+    "START_DATE": "2019-01-01",
+    "END_DATE": datetime.today().strftime("%Y-%m-%d"),
+    "TRAIN_RATIO": 0.80,
 }
 ```
 
-Then run all cells with `Ctrl+Shift+P` → "Run All Cells".
+The notebook saves generated figures under `outputs/`.
 
----
+## Run the Gradio App
 
-## 📊 Results (Apple — AAPL)
-
-| Model             | MAE    | RMSE   | R²     | Directional Acc |
-|-------------------|--------|--------|--------|-----------------|
-| Linear Regression | ~$2.40 | ~$3.10 | ~0.980 | ~52%            |
-| Random Forest     | ~$1.80 | ~$2.50 | ~0.988 | ~54%            |
-
-> Results vary based on the date range and market conditions at time of running.
-
----
-
-## 🔬 Feature Engineering
-
-| Feature Group       | Features Created                                              |
-|---------------------|---------------------------------------------------------------|
-| Lag Features        | Close and Volume for lags 1, 2, 3, 5, 10 days               |
-| Rolling Statistics  | 5, 10, 20-day moving averages, std deviations, price ratios  |
-| Intraday Structure  | High-Low range, Close % of range, Open-Close spread          |
-| Momentum            | Daily return, 5-day ROC, 10-day ROC, open gap               |
-| Volume Context      | Volume ratio vs 20-day average, daily volume change          |
-
----
-
-## 📁 Project Structure
-
-```
-stock-price-predictor/
-├── stock_prediction.ipynb  # Main notebook (12 cells)
-├── pyproject.toml          # uv project configuration
-├── uv.lock                 # Locked dependency versions
-├── data/                   # Auto-generated cached CSV
-├── outputs/                # Auto-generated plots and charts
-└── README.md               # This file
+```bash
+uv run python gradio_app.py
 ```
 
----
+Then open:
 
-## 🛠️ Tech Stack
+```text
+http://localhost:7860
+```
 
-| Tool           | Version | Purpose                          |
-|----------------|---------|----------------------------------|
-| Python         | 3.11    | Core language                    |
-| uv             | latest  | Package & environment management |
-| yfinance       | 0.2+    | Yahoo Finance data API           |
-| pandas         | 2.0+    | Data manipulation                |
-| numpy          | 1.24+   | Numerical computing              |
-| scikit-learn   | 1.3+    | ML models and preprocessing      |
-| matplotlib     | 3.7+    | Plotting                         |
-| seaborn        | 0.12+   | Statistical visualization        |
+From the app, you can change the ticker, date range, train/test split, and Random Forest settings.
 
----
+## Model Notes
 
-## ⚠️ Disclaimer
+The train/test split is chronological because stock data is time series data. Older rows are used for training and newer rows are held out for testing.
 
-This project is for **educational purposes only**. Stock price prediction is inherently uncertain and influenced by countless unpredictable factors. **Do not use the outputs of this model for real investment or trading decisions.**
+The Random Forest is usually the stronger model here because it can pick up non-linear relationships in the engineered features. Linear Regression is kept as a baseline, and the ensemble is a simple average of both model predictions.
 
----
+## Outputs
+
+The project can generate:
+
+- Historical price and volume plots
+- Actual vs predicted closing price plots
+- Model comparison dashboard
+- Random Forest feature importance chart
+- Next-trading-day prediction table
+
+## Disclaimer
+
+This is an educational machine learning project. Stock prices are noisy and affected by events that are not present in the historical OHLCV data. Do not use this project as financial advice.
